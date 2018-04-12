@@ -26,15 +26,15 @@
 </template>
 
 <script>
-import Resizer from './Resizer'
-import Pane from './Pane'
+import Resizer from "./Resizer";
+import Pane from "./Pane";
 
 function unFocus(document, window) {
   if (document.selection) {
-    document.selection.empty()
+    document.selection.empty();
   } else {
     try {
-      window.getSelection().removeAllRanges()
+      window.getSelection().removeAllRanges();
       // eslint-disable-next-line no-empty
     } catch (e) {
       // console.log(e)
@@ -43,80 +43,78 @@ function unFocus(document, window) {
 }
 
 export default {
-  name: 'pane-rs',
+  name: "pane-rs",
   components: {
-    'resizer-comp': Resizer,
-    'pane-comp': Pane,
+    "resizer-comp": Resizer,
+    "pane-comp": Pane
   },
   props: {
     allowResize: { type: Boolean, default: false },
-    splitTo: { type: String, default: 'columns' }, // column || rows
-    primary: { type: String, default: 'first' }, // first || second
+    splitTo: { type: String, default: "columns" }, // column || rows
+    primary: { type: String, default: "first" }, // first || second
     size: { type: Number, default: 16 }, // pixels || percents
-    units: { type: String, default: 'pixels' }, // pixels || percents
+    units: { type: String, default: "pixels" }, // pixels || percents
     minSize: { type: Number, default: 16 }, // pixels || percents
     maxSize: { type: Number, default: 0 }, // pixels || percents
     step: { type: Number, default: 0 }, // pixels only
+    firstStyle: { type: String, default: "" },
+    secondStyle: { type: String, default: "" }
   },
   data() {
     return {
       active: false,
       position: 0,
-      localSize: this.size,
-    }
+      localSize: this.size
+    };
   },
   watch: {
     // whenever question changes, this function will run
     size: function(newSize, oldSize) {
-      this.localSize = newSize
-    },
+      this.localSize = newSize;
+    }
   },
   computed: {
     classObject() {
       return {
-        columns: this.splitTo === 'columns',
-        rows: this.splitTo === 'rows',
-      }
+        columns: this.splitTo === "columns",
+        rows: this.splitTo === "rows"
+      };
     },
     iStyleFirst() {
-      let el = 'first'
-      let style = { flex: 1, position: 'relative', outline: 'none' }
+      let el = "first";
+      let style = { flex: 1, position: "relative", outline: "none" };
 
       if (el === this.primary) {
-        style.flex = '0 0 auto'
-        let units = this.units === 'pixels' ? 'px' : '%'
-        this.splitTo === 'columns'
-          ? (style.width = this.localSize + units)
-          : (style.height = this.localSize + units)
+        style.flex = "0 0 auto";
+        let units = this.units === "pixels" ? "px" : "%";
+        this.splitTo === "columns" ? (style.width = this.localSize + units) : (style.height = this.localSize + units);
       } else {
-        style.flex = '1 1 0%'
+        style.flex = "1 1 0%";
       }
-      return style
+      return [style, this.firstStyle];
     },
     iStyleSecond() {
-      let el = 'second'
-      let style = { flex: 1, position: 'relative', outline: 'none' }
+      let el = "second";
+      let style = { flex: 1, position: "relative", outline: "none" };
 
       if (el === this.primary) {
-        style.flex = '0 0 auto'
-        let units = this.units === 'pixels' ? 'px' : '%'
-        this.splitTo === 'columns'
-          ? (style.width = this.localSize + units)
-          : (style.height = this.localSize + units)
+        style.flex = "0 0 auto";
+        let units = this.units === "pixels" ? "px" : "%";
+        this.splitTo === "columns" ? (style.width = this.localSize + units) : (style.height = this.localSize + units);
       } else {
-        style.flex = '1 1 0%'
+        style.flex = "1 1 0%";
       }
-      return style
-    },
+      return [style, this.secondStyle];
+    }
   },
   methods: {
     round2Fixed(value) {
-      let val = +value
-      if (isNaN(val)) return NaN
+      let val = +value;
+      if (isNaN(val)) return NaN;
 
-      val = Math.round(+(val.toString() + 'e2'))
+      val = Math.round(+(val.toString() + "e2"));
 
-      return +(val.toString() + 'e-2')
+      return +(val.toString() + "e-2");
     },
     onMouseDown(event) {
       if (this.allowResize) {
@@ -124,26 +122,23 @@ export default {
           touches: [
             {
               clientX: event.clientX,
-              clientY: event.clientY,
-            },
-          ],
-        })
-        this.onTouchStart(eventWithTouches)
+              clientY: event.clientY
+            }
+          ]
+        });
+        this.onTouchStart(eventWithTouches);
       }
     },
     onTouchStart(event) {
       if (this.allowResize) {
-        unFocus(document, window)
-        const position =
-          this.splitTo === 'columns'
-            ? event.touches[0].clientX
-            : event.touches[0].clientY
+        unFocus(document, window);
+        const position = this.splitTo === "columns" ? event.touches[0].clientX : event.touches[0].clientY;
 
-        if (typeof this.onDragStarted === 'function') {
-          onDragStarted()
+        if (typeof this.onDragStarted === "function") {
+          onDragStarted();
         }
-        this.active = true
-        this.position = position
+        this.active = true;
+        this.position = position;
       }
     },
     onMouseMove(event) {
@@ -152,77 +147,59 @@ export default {
           touches: [
             {
               clientX: event.clientX,
-              clientY: event.clientY,
-            },
-          ],
-        })
-        this.onTouchMove(eventWithTouches)
+              clientY: event.clientY
+            }
+          ]
+        });
+        this.onTouchMove(eventWithTouches);
       }
     },
     onTouchMove(event) {
-      const { active, position } = this.$data
-      const {
-        maxSize,
-        minSize,
-        step,
-        allowResize,
-        splitTo,
-        primary,
-      } = this.$props
+      const { active, position } = this.$data;
+      const { maxSize, minSize, step, allowResize, splitTo, primary } = this.$props;
       if (allowResize && active) {
-        unFocus(document, window)
-        const isPrimaryFirst = primary === 'first'
-        const ref = isPrimaryFirst ? 'pane1' : 'pane2'
+        unFocus(document, window);
+        const isPrimaryFirst = primary === "first";
+        const ref = isPrimaryFirst ? "pane1" : "pane2";
         if (ref) {
-          const node = this.$refs[ref].$vnode.elm
+          const node = this.$refs[ref].$vnode.elm;
           if (node.getBoundingClientRect) {
             // Where is cursor positioned
-            const current =
-              splitTo === 'columns'
-                ? event.touches[0].clientX
-                : event.touches[0].clientY
+            const current = splitTo === "columns" ? event.touches[0].clientX : event.touches[0].clientY;
 
             //Current pane size (width || height)
             const size =
-              splitTo === 'columns'
-                ? node.getBoundingClientRect()['width']
-                : node.getBoundingClientRect()['height']
+              splitTo === "columns" ? node.getBoundingClientRect()["width"] : node.getBoundingClientRect()["height"];
             // Direct parent size (width || height)
             const pSize =
-              splitTo === 'columns'
-                ? this.$refs[ref].$parent.$vnode.elm.getBoundingClientRect()[
-                    'width'
-                  ]
-                : this.$refs[ref].$parent.$vnode.elm.getBoundingClientRect()[
-                    'height'
-                  ]
+              splitTo === "columns"
+                ? this.$refs[ref].$parent.$vnode.elm.getBoundingClientRect()["width"]
+                : this.$refs[ref].$parent.$vnode.elm.getBoundingClientRect()["height"];
 
-            let positionDelta = position - current
-            const sizeDelta = isPrimaryFirst ? positionDelta : -positionDelta
+            let positionDelta = position - current;
+            const sizeDelta = isPrimaryFirst ? positionDelta : -positionDelta;
             let newSize =
-              this.units === 'percents'
-                ? this.round2Fixed((size - sizeDelta) * 100 / pSize)
-                : size - sizeDelta
+              this.units === "percents" ? this.round2Fixed((size - sizeDelta) * 100 / pSize) : size - sizeDelta;
 
-            const newPosition = position - positionDelta
+            const newPosition = position - positionDelta;
 
             if (this.step) {
               if (Math.abs(positionDelta) < this.step) {
-                return
+                return;
               }
               // eslint-disable-next-line no-bitwise
-              positionDelta = ~~(positionDelta / this.step) * this.step
+              positionDelta = ~~(positionDelta / this.step) * this.step;
             }
 
             if (minSize && newSize < minSize) {
-              newSize = minSize
+              newSize = minSize;
             }
             if (maxSize && newSize > maxSize) {
-              newSize = maxSize
+              newSize = maxSize;
             }
 
-            this.localSize = newSize
-            this.position = newPosition
+            this.localSize = newSize;
+            this.position = newPosition;
           }
         }
       }
@@ -231,21 +208,21 @@ export default {
       // console.log(this)
       const { allowResize, onDragFinished } = {
         allowResize: this.allowResize,
-        onDragFinished: this.onDragFinished,
-      }
+        onDragFinished: this.onDragFinished
+      };
       const { active, draggedSize } = {
         active: this.active,
-        draggedSize: this.draggedSize,
-      }
+        draggedSize: this.draggedSize
+      };
       if (allowResize && active) {
-        if (typeof onDragFinished === 'function') {
-          onDragFinished(draggedSize)
+        if (typeof onDragFinished === "function") {
+          onDragFinished(draggedSize);
         }
-        this.active = false
+        this.active = false;
       }
-    },
-  },
-}
+    }
+  }
+};
 </script>
 
 <style scoped>
